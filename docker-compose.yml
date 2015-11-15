@@ -1,0 +1,8 @@
+amq:
+  image: viliusl/ubuntu-activemq-server
+  volumes:
+    - ./dockerFiles/activemq.xml:/opt/apache-activemq-5.9.0/conf/activemq.xml:ro
+  mem_limit: 512m
+  ports:
+    - "61616:61616"
+    - "8161:8161"
