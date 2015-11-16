@@ -43,6 +43,7 @@ class ScheduledMessagesTest extends Specification {
             new PollingConditions().within(5) {
                 consumerText != null
             }
+            Thread.sleep(1000)
         where:
             currentUuid << [UUID.randomUUID()]
     }
@@ -62,6 +63,7 @@ class ScheduledMessagesTest extends Specification {
         void onMessage(Message message) {
             println("Message received at ${new Date()}")
             consumerText = (message as TextMessage).text
+            message.acknowledge()
         }
     }
 
