@@ -2,6 +2,7 @@ package com.github.alien11689.scheduledmessaging
 
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.ScheduledMessage
+import spock.lang.AutoCleanup
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.concurrent.PollingConditions
@@ -17,7 +18,7 @@ import javax.jms.Queue
 import javax.jms.Session
 import javax.jms.TextMessage
 
-class ScheduledMessagesTest extends Specification {
+class AmqScheduledMessagesTest extends Specification {
 
     String consumerText
 
@@ -25,16 +26,13 @@ class ScheduledMessagesTest extends Specification {
     def 'should send message with 8 second delay to queue #currentUuid'() {
         given:
             String queue = "scheduledMessageQueue-$currentUuid"
-            Connection connection = activeMQConnectionFactory.createConnection()
-            Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
             Destination destination = session.createQueue(queue)
-            prepareConsumer(connection, session, destination)
-            MessageProducer producer = prepareProducer(session, destination)
-            Message message = session.createTextMessage("Message: $currentUuid")
-            message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, 8000)
+            prepareConsumer(destination)
+            MessageProducer producer = prepareProducer(destination)
+            TextMessage message = prepareMessage("Message: $currentUuid")
+            println("Now is ${new Date()}")
         when:
             producer.send(message)
-            println("Now is ${new Date()}")
         then:
             Thread.sleep(5000)
         and:
@@ -48,11 +46,17 @@ class ScheduledMessagesTest extends Specification {
             currentUuid << [UUID.randomUUID()]
     }
 
-    private MessageProducer prepareProducer(Session session, Queue destination) {
-        session.createProducer(destination)
+    private TextMessage prepareMessage(msg) {
+        Message message = session.createTextMessage(msg)
+        message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY, 8000)
+        message
     }
 
-    private void prepareConsumer(Connection connection, Session session, Queue destination) {
+    private MessageProducer prepareProducer(Queue destination) {
+        return session.createProducer(destination)
+    }
+
+    private void prepareConsumer(Queue destination) {
         MessageConsumer consumer = session.createConsumer(destination)
         consumer.messageListener = listener
         connection.start()
@@ -67,5 +71,12 @@ class ScheduledMessagesTest extends Specification {
         }
     }
 
+    @AutoCleanup(quiet = true)
     ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory('admin', 'admin', 'tcp://localhost:61616')
+
+    @AutoCleanup(quiet = true)
+    Connection connection = activeMQConnectionFactory.createConnection()
+
+    @AutoCleanup(quiet = true)
+    Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 }
