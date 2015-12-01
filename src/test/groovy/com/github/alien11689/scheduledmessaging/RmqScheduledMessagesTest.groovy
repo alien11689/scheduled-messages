@@ -12,7 +12,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.concurrent.PollingConditions
 
-class RmqScheduledMessaging extends Specification {
+class RmqScheduledMessagesTest extends Specification {
     String exchange = 'my-exchange'
     String consumerText
 
