@@ -22,7 +22,7 @@ class RmqScheduledMessaging extends Specification {
             String queue = "scheduledMessageQueue-$currentUuid"
             createQueue(queue)
             createConsumer(queue)
-            println("Now is ${new Date()}")
+            println("Send time: ${new Date()}")
         when:
             channel.basicPublish(exchange,
                     queue,

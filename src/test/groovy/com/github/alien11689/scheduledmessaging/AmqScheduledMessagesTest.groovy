@@ -30,7 +30,7 @@ class AmqScheduledMessagesTest extends Specification {
             prepareConsumer(destination)
             MessageProducer producer = prepareProducer(destination)
             TextMessage message = prepareMessage("Message: $currentUuid")
-            println("Now is ${new Date()}")
+            println("Send time: ${new Date()}")
         when:
             producer.send(message)
         then:
